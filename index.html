@@ -88,14 +88,29 @@ h1 {
 
 <script>
 // ---------------- CONFIG ----------------
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "AIzaSyAb_Ovtu7S8x8Qi3HSxg-r4n4Rk5s3uz7E",
-    authDomain: "venta-messenger.firebaseapp.com",
-    projectId: "venta-messenger",
-    storageBucket: "venta-messenger.appspot.com",
-    messagingSenderId: "311208436021",
-    appId: "1:311208436021:web:b6a6c3c62438f6b73dac7c"
+  apiKey: "AIzaSyAb_Ovtu7S8x8Qi3HSxg-r4n4Rk5s3uz7E",
+  authDomain: "venta-messenger.firebaseapp.com",
+  projectId: "venta-messenger",
+  storageBucket: "venta-messenger.firebasestorage.app",
+  messagingSenderId: "311208436021",
+  appId: "1:311208436021:web:b6a6c3c62438f6b73dac7c",
+  measurementId: "G-FQTE0DKYTJ"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+    
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
