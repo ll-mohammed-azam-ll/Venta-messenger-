@@ -1,156 +1,100 @@
-
-<!-- AIzaSyAb_Ovtu7S8x8Qi3HSxg-r4n4Rk5s3uz7E -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Private Firebase Chat with Google Login</title>
+<title>Group Members Login</title>
 
 <style>
 body {
-    font-family: sans-serif;
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
     margin: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    background-color: #f0f0f0;
+    height: 100vh;
 }
 
-#chat-container {
+#container {
     width: 100%;
     max-width: 400px;
-    height: 80vh;
-    background-color: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    border-radius: 8px;
-    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
 }
 
 h1 {
     background-color: #4CAF50;
     color: white;
-    text-align: center;
-    padding: 10px 0;
-    margin: 0;
-    font-size: 1.5em;
+    padding: 10px;
+    border-radius: 8px;
 }
 
 #login-btn {
-    margin: 20px auto;
-    padding: 10px 20px;
     background-color: #4285F4;
     color: white;
     border: none;
-    border-radius: 20px;
+    padding: 10px 20px;
+    margin-top: 20px;
+    border-radius: 25px;
     cursor: pointer;
     font-size: 1em;
 }
+#login-btn:hover {
+    background-color: #357ae8;
+}
 
-#messages-area {
-    flex-grow: 1;
-    padding: 10px;
+#user-info {
+    margin-top: 15px;
+}
+
+#users-list {
+    margin-top: 20px;
+    text-align: left;
+    max-height: 300px;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Message Styling */
-.message {
-    margin: 5px 0;
-    padding: 8px 12px;
-    border-radius: 15px;
-    max-width: 70%;
-    word-wrap: break-word;
-    display: flex;
-    flex-direction: column;
-}
-.user-message {
-    align-self: flex-end;
-    background-color: #DCF8C6; /* Light green */
-}
-.other-message {
-    align-self: flex-start;
-    background-color: #EAEAEA; /* Light gray */
-}
-.message-time {
-    font-size: 0.7em;
-    color: #777;
-    align-self: flex-end;
-    margin-top: 2px;
-}
-
-#message-form {
-    display: flex;
-    padding: 10px;
     border-top: 1px solid #ddd;
+    padding-top: 10px;
 }
 
-#message-input {
-    flex-grow: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    margin-right: 10px;
-    font-size: 1em;
-}
-
-#message-form button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-#message-form button:hover {
-    background-color: #45a049;
-}
-
-#receiver-select {
-    margin: 10px;
-    padding: 5px;
-    border-radius: 10px;
+.user-item {
+    background: #e7f5ff;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 8px;
 }
 </style>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
 </head>
 <body>
-
-<div id="chat-container">
-    <h1>Private Chat 💬</h1>
+<div id="container">
+    <h1>Group Members 👥</h1>
     <button id="login-btn">Login with Google</button>
 
-    <select id="receiver-select" style="display:none;">
-        <option value="">Select a user</option>
-    </select>
+    <div id="user-info" style="display:none;">
+        <p><strong>Welcome,</strong> <span id="user-name"></span></p>
+    </div>
 
-    <div id="messages-area"></div>
-
-    <form id="message-form" style="display:none;">
-        <input type="text" id="message-input" placeholder="Type a message..." required>
-        <button type="submit">Send</button>
-    </form>
+    <div id="users-list"></div>
 </div>
 
 <script>
+// ---------------- CONFIG ----------------
 const firebaseConfig = {
     apiKey: "AIzaSyAb_Ovtu7S8x8Qi3HSxg-r4n4Rk5s3uz7E",
-authDomain: "venta-messenger.firebaseapp.com",
-projectId: "venta-messenger",
-storageBucket: "venta-messenger.appspot.com",
-messagingSenderId: "311208436021",
-appId: "1:311208436021:web:b6a6c3c62438f6b73dac7c"
+    authDomain: "venta-messenger.firebaseapp.com",
+    projectId: "venta-messenger",
+    storageBucket: "venta-messenger.appspot.com",
+    messagingSenderId: "311208436021",
+    appId: "1:311208436021:web:b6a6c3c62438f6b73dac7c"
 };
 
 // Initialize Firebase
@@ -158,113 +102,62 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-const loginBtn = document.getElementById('login-btn');
-const messageForm = document.getElementById('message-form');
-const messageInput = document.getElementById('message-input');
-const messagesArea = document.getElementById('messages-area');
-const receiverSelect = document.getElementById('receiver-select');
+const loginBtn = document.getElementById("login-btn");
+const userInfo = document.getElementById("user-info");
+const userName = document.getElementById("user-name");
+const usersList = document.getElementById("users-list");
 
-let currentUser = null;
-
-// ----------------- LOGIN -----------------
-loginBtn.addEventListener('click', () => {
+// ---------------- LOGIN ----------------
+loginBtn.addEventListener("click", () => {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider)
-        .then(result => {
-            currentUser = result.user;
-            loginBtn.style.display = 'none';
-            messageForm.style.display = 'flex';
-            receiverSelect.style.display = 'block';
-            loadUsers();
-        })
-        .catch(err => console.error(err));
+    .then(result => {
+        const user = result.user;
+        if (user) {
+            // Add user to Firestore if not exists
+            db.collection("users").doc(user.uid).set({
+                uid: user.uid,
+                displayName: user.displayName,
+                email: user.email,
+                photoURL: user.photoURL,
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+
+            showUserInfo(user);
+            listenForUsers();
+        }
+    })
+    .catch(err => {
+        console.error("Login Error:", err);
+        alert("Login failed. Check console for details.");
+    });
 });
 
-// ----------------- LOAD OTHER USERS -----------------
-function loadUsers() {
-    db.collection('users').get().then(snapshot => {
+// ---------------- DISPLAY USER INFO ----------------
+function showUserInfo(user) {
+    loginBtn.style.display = "none";
+    userInfo.style.display = "block";
+    userName.textContent = user.displayName;
+}
+
+// ---------------- LISTEN FOR USERS ----------------
+function listenForUsers() {
+    db.collection("users")
+    .orderBy("displayName")
+    .onSnapshot(snapshot => {
+        usersList.innerHTML = "<h3>Logged-in Users:</h3>";
         snapshot.forEach(doc => {
             const user = doc.data();
-            if (user.uid !== currentUser.uid) {
-                const option = document.createElement('option');
-                option.value = user.uid;
-                option.textContent = user.displayName;
-                receiverSelect.appendChild(option);
-            }
+            const div = document.createElement("div");
+            div.classList.add("user-item");
+            div.innerHTML = `
+                <strong>${user.displayName}</strong><br>
+                <small>${user.email}</small>
+            `;
+            usersList.appendChild(div);
         });
     });
-
-    // Add current user to database if not exists
-    db.collection('users').doc(currentUser.uid).set({
-        uid: currentUser.uid,
-        displayName: currentUser.displayName
-    }, { merge: true });
 }
-
-// ----------------- DISPLAY MESSAGE -----------------
-function displayMessage(data) {
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message');
-    messageElement.classList.add(data.sender === currentUser.uid ? 'user-message' : 'other-message');
-
-    let time = '';
-    if (data.timestamp && data.timestamp.seconds) {
-        const date = new Date(data.timestamp.seconds * 1000);
-        time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    messageElement.innerHTML = `
-        <span class="message-text">${data.text}</span>
-        <span class="message-time">${time}</span>
-    `;
-    messagesArea.appendChild(messageElement);
-}
-
-// ----------------- SEND MESSAGE -----------------
-messageForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const text = messageInput.value.trim();
-    const receiverUid = receiverSelect.value;
-
-    if (!receiverUid) {
-        alert("Please select a user to chat with!");
-        return;
-    }
-
-    if (text) {
-        db.collection('messages').add({
-            text: text,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            sender: currentUser.uid,
-            receiver: receiverUid
-        });
-        messageInput.value = '';
-    }
-});
-
-// ----------------- LISTEN FOR MESSAGES -----------------
-function listenForMessages(receiverUid) {
-    messagesArea.innerHTML = '';
-    db.collection('messages')
-      .where('sender', 'in', [currentUser.uid, receiverUid])
-      .where('receiver', 'in', [currentUser.uid, receiverUid])
-      .orderBy('timestamp', 'asc')
-      .onSnapshot(snapshot => {
-          messagesArea.innerHTML = '';
-          snapshot.forEach(doc => displayMessage(doc.data()));
-          messagesArea.scrollTop = messagesArea.scrollHeight;
-      });
-}
-
-// Listen when user selects receiver
-receiverSelect.addEventListener('change', () => {
-    const receiverUid = receiverSelect.value;
-    if (receiverUid) {
-        listenForMessages(receiverUid);
-    }
-});
-
-
 </script>
 </body>
 </html>
